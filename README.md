@@ -90,7 +90,7 @@ The `Auction.sol` contract supports the following functions:
 
 - Node.js v18+
 - MetaMask browser extension
-- Sepolia testnet ETH (get from [sepoliafaucet.com](https://sepoliafaucet.com))
+- Sepolia testnet ETH (get from ([Google Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)))
 
 ### Installation
 
