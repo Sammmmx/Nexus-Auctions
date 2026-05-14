@@ -8,21 +8,32 @@ import {
 } from "wagmi";
 import { parseEther, formatEther } from "viem";
 import { AUCTION_ADDRESS, AUCTION_ABI } from "./auction";
+import RequestCard from "./RequestCard";
 
 function App() {
   const { address, isConnected } = useAccount();
   const [auctionNumber, setAuctionNumber] = useState("");
   const [bidAmount, setBidAmount] = useState("");
-  const [createForm, setCreateForm] = useState({
-    seller: "",
-    auctionNumber: "",
+  const [approveNumbers, setApproveNumbers] = useState({});
+  const [requestForm, setRequestForm] = useState({
+    name: "",
     startingPrice: "",
     duration: "",
+  });
+  const [createForm, setCreateForm] = useState({
+    auctionNumber: "",
+    seller: "",
   });
 
   const auctionId = auctionNumber ? BigInt(auctionNumber) : undefined;
 
   // ─── READS ───────────────────────────────────────────
+
+  const { data: fees } = useReadContract({
+    address: AUCTION_ADDRESS,
+    abi: AUCTION_ABI,
+    functionName: "fees",
+  });
 
   const { data: isActive, refetch: refetchActive } = useReadContract({
     address: AUCTION_ADDRESS,
@@ -77,11 +88,27 @@ function App() {
   const isWinner =
     auctionData &&
     address &&
-    auctionData[4]?.toLowerCase() === address.toLowerCase();
+    auctionData[5]?.toLowerCase() === address.toLowerCase();
   const isSeller =
     auctionData &&
     address &&
-    auctionData[0]?.toLowerCase() === address.toLowerCase();
+    auctionData[1]?.toLowerCase() === address.toLowerCase();
+
+  const { data: allRequesters, refetch: refetchRequesters } = useReadContract({
+    address: AUCTION_ADDRESS,
+    abi: AUCTION_ABI,
+    functionName: "getRequests",
+    args: [],
+    enabled: !!isOwner,
+  });
+
+  const { data: myRequest, refetch: refetchMyRequest } = useReadContract({
+    address: AUCTION_ADDRESS,
+    abi: AUCTION_ABI,
+    functionName: "auctionRequests",
+    args: [address],
+    enabled: !!address && !isOwner,
+  });
 
   // ─── WRITES ──────────────────────────────────────────
 
@@ -104,6 +131,30 @@ function App() {
     refetchBidder();
     refetchTime();
     refetchAuction();
+    refetchMyRequest();
+    refetchRequesters();
+  };
+
+  const handleRequestAuction = () => {
+    const { name, startingPrice, duration } = requestForm;
+    if (!name || !startingPrice || !duration) return;
+    writeContract({
+      address: AUCTION_ADDRESS,
+      abi: AUCTION_ABI,
+      functionName: "requestAuction",
+      args: [name, parseEther(startingPrice), BigInt(duration)],
+      value: fees,
+    });
+  };
+
+  const handleCancelRequest = () => {
+    if (!myRequest) return;
+    writeContract({
+      address: AUCTION_ADDRESS,
+      abi: AUCTION_ABI,
+      functionName: "cancelRequest",
+      args: [],
+    });
   };
 
   // Bid
@@ -125,7 +176,7 @@ function App() {
       abi: AUCTION_ABI,
       functionName: "completeTransaction",
       args: [auctionId],
-      value: auctionData[3], // high bid amount
+      value: auctionData[4], // high bid amount
     });
   };
 
@@ -153,18 +204,13 @@ function App() {
 
   // Owner: Create auction
   const handleCreateAuction = () => {
-    const { seller, auctionNumber, startingPrice, duration } = createForm;
-    if (!seller || !auctionNumber || !startingPrice || !duration) return;
+    const { auctionNumber, seller } = createForm;
+    if (!seller || !auctionNumber) return;
     writeContract({
       address: AUCTION_ADDRESS,
       abi: AUCTION_ABI,
       functionName: "createAuction",
-      args: [
-        seller,
-        BigInt(auctionNumber),
-        parseEther(startingPrice),
-        BigInt(duration),
-      ],
+      args: [BigInt(auctionNumber), seller],
     });
   };
 
@@ -283,6 +329,81 @@ function App() {
             />
           </div>
 
+          {/* Request Auction */}
+          {!isOwner && !myRequest?.[2] && (
+            <div style={cardStyle}>
+              <h3 style={{ marginTop: 0 }}>📝 Request an Auction</h3>
+              <p style={{ fontSize: "0.9rem", color: "#666" }}>
+                Fee: {fees ? formatEther(fees) : "—"} ETH
+              </p>
+              <input
+                style={inputStyle}
+                placeholder="Item name"
+                value={requestForm.name}
+                onChange={(e) =>
+                  setRequestForm({ ...requestForm, name: e.target.value })
+                }
+              />
+              <input
+                style={inputStyle}
+                placeholder="Starting price in ETH (e.g. 0.01)"
+                type="number"
+                value={requestForm.startingPrice}
+                onChange={(e) =>
+                  setRequestForm({
+                    ...requestForm,
+                    startingPrice: e.target.value,
+                  })
+                }
+              />
+              <input
+                style={inputStyle}
+                placeholder="Duration in seconds (e.g. 3600 = 1hr)"
+                type="number"
+                value={requestForm.duration}
+                onChange={(e) =>
+                  setRequestForm({ ...requestForm, duration: e.target.value })
+                }
+              />
+              <button
+                style={btnStyle("#7c3aed")}
+                onClick={handleRequestAuction}
+                disabled={isPending || isConfirming}
+              >
+                Submit Request
+              </button>
+            </div>
+          )}
+
+          {/* My Pending Request */}
+          {!isOwner && myRequest && myRequest[2] > 0n && (
+            <div
+              style={{
+                ...cardStyle,
+                background: "#fefce8",
+                border: "1px solid #fde68a",
+              }}
+            >
+              <h3 style={{ marginTop: 0 }}>📋 My Pending Request</h3>
+              <p>
+                <strong>Item Name:</strong> {myRequest[0]}
+              </p>
+              <p>
+                <strong>Starting Price:</strong> {formatEther(myRequest[1])} ETH
+              </p>
+              <p>
+                <strong>Duration:</strong> {Number(myRequest[2])} seconds
+              </p>
+              <button
+                style={btnStyle("#dc2626")}
+                onClick={handleCancelRequest}
+                disabled={isPending || isConfirming}
+              >
+                Cancel Request
+              </button>
+            </div>
+          )}
+
           {/* Auction Info */}
           {auctionId !== undefined && (
             <div style={cardStyle}>
@@ -296,23 +417,25 @@ function App() {
                     : "🔴 Ended / Inactive"}
               </p>
               <p>
+                <strong>Item Name:</strong> {auctionData ? auctionData[0] : "—"}
+              </p>
+              <p>
                 <strong>Seller:</strong>{" "}
-                {auctionData ? shortAddress(auctionData[0]) : "—"}
+                {auctionData ? shortAddress(auctionData[1]) : "—"}
               </p>
               <p>
                 <strong>Starting Price:</strong>{" "}
-                {auctionData ? `${formatEther(auctionData[1])} ETH` : "—"}
+                {auctionData ? `${formatEther(auctionData[2])} ETH` : "—"}
               </p>
               <p>
                 <strong>Highest Bid:</strong>{" "}
-                {auctionData && auctionData[3] > 0n
-                  ? `${formatEther(auctionData[3])} ETH`
+                {auctionData && auctionData[4] > 0n
+                  ? `${formatEther(auctionData[4])} ETH`
                   : "—"}
               </p>
-
               <p>
                 <strong>Highest Bidder:</strong>{" "}
-                {auctionData ? shortAddress(auctionData[4]) : "—"}
+                {auctionData ? shortAddress(auctionData[5]) : "—"}
               </p>
               <p>
                 <strong>Time Left:</strong>{" "}
@@ -320,11 +443,11 @@ function App() {
               </p>
               <p>
                 <strong>Purchased:</strong>{" "}
-                {auctionData ? (auctionData[6] ? "✅ Yes" : "❌ No") : "—"}
+                {auctionData ? (auctionData[7] ? "✅ Yes" : "❌ No") : "—"}
               </p>
               <p>
                 <strong>Withdrawn:</strong>{" "}
-                {auctionData ? (auctionData[7] ? "✅ Yes" : "❌ No") : "—"}
+                {auctionData ? (auctionData[8] ? "✅ Yes" : "❌ No") : "—"}
               </p>
             </div>
           )}
@@ -351,7 +474,7 @@ function App() {
           )}
 
           {/* Winner: Complete Transaction */}
-          {isWinner && !isActive && auctionData && !auctionData[6] && (
+          {isWinner && !isActive && auctionData && !auctionData[7] && (
             <div
               style={{
                 ...cardStyle,
@@ -363,7 +486,7 @@ function App() {
               <p>
                 Complete the purchase by sending{" "}
                 <strong>
-                  {auctionData ? formatEther(auctionData[3]) : "—"} ETH
+                  {auctionData ? formatEther(auctionData[4]) : "—"} ETH
                 </strong>
               </p>
               <button
@@ -394,7 +517,7 @@ function App() {
           )}
 
           {/* Seller: Withdraw */}
-          {isSeller && auctionData && auctionData[6] && !auctionData[7] && (
+          {isSeller && auctionData && auctionData[7] && !auctionData[8] && (
             <div
               style={{
                 ...cardStyle,
@@ -406,7 +529,7 @@ function App() {
               <p>
                 The item was purchased. You can now withdraw{" "}
                 <strong>
-                  {auctionData ? formatEther(auctionData[3]) : "—"} ETH
+                  {auctionData ? formatEther(auctionData[4]) : "—"} ETH
                 </strong>
               </p>
               <button
@@ -451,27 +574,6 @@ function App() {
                   })
                 }
               />
-              <input
-                style={inputStyle}
-                placeholder="Starting price in ETH (e.g. 0.01)"
-                type="number"
-                value={createForm.startingPrice}
-                onChange={(e) =>
-                  setCreateForm({
-                    ...createForm,
-                    startingPrice: e.target.value,
-                  })
-                }
-              />
-              <input
-                style={inputStyle}
-                placeholder="Duration in seconds (e.g. 3600 = 1hr)"
-                type="number"
-                value={createForm.duration}
-                onChange={(e) =>
-                  setCreateForm({ ...createForm, duration: e.target.value })
-                }
-              />
               <button
                 style={btnStyle("#dc2626")}
                 onClick={handleCreateAuction}
@@ -491,6 +593,27 @@ function App() {
               >
                 Cancel Auction #{auctionNumber || "?"}
               </button>
+
+              <h4 style={{ marginTop: "1rem" }}>Pending Requests</h4>
+              {allRequesters && allRequesters.length === 0 && (
+                <p style={{ fontSize: "0.9rem", color: "#666" }}>
+                  No pending requests.
+                </p>
+              )}
+              {allRequesters &&
+                allRequesters.map((requesterAddr) => (
+                  <RequestCard
+                    key={requesterAddr}
+                    address={requesterAddr}
+                    auctionNumber={approveNumbers[requesterAddr] || ""}
+                    onApprove={(val) =>
+                      setApproveNumbers({
+                        ...approveNumbers,
+                        [requesterAddr]: val,
+                      })
+                    }
+                  />
+                ))}
             </div>
           )}
         </div>

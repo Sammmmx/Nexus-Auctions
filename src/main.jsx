@@ -9,7 +9,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import App from "./App.jsx";
 
 const config = getDefaultConfig({
-  appName: "Auction dApp",
+  appName: "Nexus Auctions",
   projectId: "2e030ee36e7bb4185c27d970e60860d2",
   chains: [sepolia],
   transports: {
