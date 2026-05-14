@@ -54,6 +54,7 @@ contract Auction {
         uint256 duration;
     }
     mapping(address=> requestsDetails) public auctionRequests;
+    address[] public requesters;
 
     modifier onlyOwner() {
         if(msg.sender != owner) revert NotOwner(msg.sender);
@@ -102,6 +103,7 @@ contract Auction {
             startingPrice: startingPrice,
             duration: duration
         });
+        requesters.push(msg.sender);
 
         emit AuctionRequested(name, msg.sender);
     }
@@ -135,11 +137,11 @@ contract Auction {
             withdrawn: false
         });
 
-        emit AuctionCreated(seller, auctionNumber, t.startingPrice, t.duration);
-
         delete auctionRequests[seller];
-
+        removeRequester(seller);
         ownerWithdrawal();
+
+        emit AuctionCreated(seller, auctionNumber, t.startingPrice, t.duration);
     }
 
     function bid(uint256 auctionNumber, uint256 bidAmount) public 
@@ -195,6 +197,10 @@ contract Auction {
         return auctionList[auctionNumber].high;
     }
 
+    function getRequests() public view onlyOwner returns(address[] memory){
+        return requesters;
+    }
+
     function announceResults(uint256 auctionNumber) public
     auctionCheck(auctionNumber)
     checkInActive(auctionNumber)
@@ -239,4 +245,15 @@ contract Auction {
         (bool success, ) = owner.call{value: fees}("");
         require(success, "Transaction Failed");
     }
+
+    function removeRequester(address requester) internal {
+    uint256 length = requesters.length;
+    for (uint256 i = 0; i < length; i++) {
+        if (requesters[i] == requester) {
+            requesters[i] = requesters[length - 1];
+            requesters.pop();
+            break;
+        }
+    }
+}
 }
