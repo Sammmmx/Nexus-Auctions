@@ -8,7 +8,7 @@ A decentralized auction application built on Ethereum, deployed on the Sepolia t
 
 > Deployed on Sepolia Testnet
 > Contract Address: `0xbb08e8ff7B8668B4039F04e70891BFAC017FE17e`
-> [View on Sepolia Etherscan](https://sepolia.etherscan.io/address/0xbb08e8ff7B8668B4039F04e70891BFAC017FE17e)
+> [View on Sepolia Etherscan](https://sepolia.etherscan.io/address/0x4C0C74c05d33D788491d15d38aBC094a8717465D)
 
 > Website: [Nexus Auctions](https://nexus-auctions.vercel.app/)
 > Get Ethereum Sepolia: [Google Sepolia Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)
