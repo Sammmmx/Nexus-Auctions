@@ -10,6 +10,8 @@ A decentralized auction application built on Ethereum, deployed on the Sepolia t
 > Contract Address: `0xbb08e8ff7B8668B4039F04e70891BFAC017FE17e`
 > [View on Sepolia Etherscan](https://sepolia.etherscan.io/address/0xbb08e8ff7B8668B4039F04e70891BFAC017FE17e)
 
+> Website: [Nexus Auctions](https://nexus-auctions.vercel.app/)
+> Get Ethereum Sepolia: [Google Sepolia Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)
 ---
 
 ## Features
@@ -81,54 +83,6 @@ The `Auction.sol` contract supports the following functions:
 | `timeLeft(auctionNumber)`                                       | View        | Returns seconds remaining in the auction        |
 | `checkHighestBidder(auctionNumber)`                             | View        | Returns the current highest bidder address      |
 | `checkActiveBidPrice(auctionNumber)`                            | View        | Returns the current highest bid amount          |
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js v18+
-- MetaMask browser extension
-- Sepolia testnet ETH (get from ([Google Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)))
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/Sammmmx/Nexus-Auctions.git
-cd Nexus-Auctions
-
-# Install frontend dependencies
-npm install
-
-# Start the development server
-npm run dev
-```
-
-Open `http://localhost:5173` in your browser.
-
-### Environment Setup
-
-Create a `.env` file in the `Auction/` folder for contract deployment:
-
-```
-SEPOLIA_RPC_URL=your_alchemy_or_infura_sepolia_url
-PRIVATE_KEY=your_wallet_private_key
-```
-
-> ⚠️ Never commit your `.env` file. It is already included in `.gitignore`.
-
-### Deploy the Contract
-
-```bash
-cd Auction
-npm install
-npx hardhat compile
-npx hardhat run scripts/deploy.js --network sepolia
-```
-
-After deploying, update `src/auction.js` with the new contract address and ABI.
 
 ---
 
