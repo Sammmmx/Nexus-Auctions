@@ -14,6 +14,12 @@ A decentralized auction application built on Ethereum, deployed on the Sepolia t
 > Get Ethereum Sepolia: [Google Sepolia Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia)
 ---
 
+## In-Progess
+
+> Database Implementation (PostgreSQL)
+> ERC-20 Token Implementation
+> UI styling
+
 ## Features
 
 - **Owner-approved auctions** — only the contract owner can create auctions, assigning a seller per auction
