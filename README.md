@@ -19,7 +19,7 @@ A decentralized auction application built on Ethereum, deployed on the Sepolia t
 - Database Implementation (PostgreSQL)
 - ERC-20 Token Implementation
 - UI styling
-- Upgradability
+- Upgradability (Proxy Pattern)
 
 ## Features
 
