@@ -287,7 +287,10 @@ function App() {
         padding: "0 1rem",
       }}
     >
-      <h1>🔨 Auction dApp</h1>
+      <h1>📈 Nexus Auctions</h1>
+      <p style={{ color: "#666", fontSize: "0.9rem", marginTop: "-0.5rem" }}>
+        Network: Sepolia Testnet
+      </p>
       <ConnectButton />
 
       {isConnected && (
