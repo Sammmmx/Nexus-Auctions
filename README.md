@@ -1,6 +1,6 @@
 # Nexus Auctions 🔨
 
-A decentralized auction application built on Ethereum, deployed on the Sepolia testnet. Nexus Auctions allows anyone to participate in auctions — placing bids, completing purchases, and withdrawing funds — all trustlessly on-chain, with owner-approved auction creation.
+A decentralized auction application built on Ethereum, deployed on the Sepolia testnet. Nexus Auctions allows anyone to participate in auctions, allowing them to  place bids, complete purchases, and withdraw funds — all trustlessly on-chain, with owner-approved auction creation.
 
 ---
 
